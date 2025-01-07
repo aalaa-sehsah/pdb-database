@@ -1,4 +1,4 @@
-# pdb-dataset
+# pdb-database
 
 We use data from the [Protein Data Bank (PDB)](https://www.rcsb.org/), a repository of experimentally determined structures available online.
 
