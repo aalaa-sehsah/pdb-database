@@ -6,6 +6,11 @@ We use data from the [Protein Data Bank (PDB)](https://www.rcsb.org/), a reposit
 
 Full-atom, high-resolution structures are available in the PDB.
 
+## Environment
+
+- VS Code
+- Python 3.12
+
 ## Files and Their Functions
 
 - `__main__.py`
