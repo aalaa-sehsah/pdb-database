@@ -1,4 +1,7 @@
-# Byte-compiled / optimized / DLL files
+pdb/
+pdb_exceptions.txt
+pdb_corrupted.txt
+
 __pycache__/
 *.py[cod]
 *$py.class
