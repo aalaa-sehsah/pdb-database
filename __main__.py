@@ -44,30 +44,29 @@ def download_pdb_files(pdb_ids: list[str], db_dir: Path, overwrite: bool) -> lis
             temp_filepath.rename(filepath)
             return check_file(filepath)
         except Exception as e:
-            print(f"[ERROR] {e}")
+            print(f"[ERROR] ({id_}) {e}")
             return False
 
     exceptions: list[str] = []
     count = len(pdb_ids)
     for i, id_ in enumerate(pdb_ids, start=1):
-        print(f"[INFO] File: {i:,}/{count:,}", end="\r")
+        print(f"[INFO] File {i:,}/{count:,}", end="\r")
         status = download_file(db_dir, id_, overwrite)
         if status is False:
             exceptions.append(id_)
+    print(f'[INFO] Finished Download of {count:,} PDB files')
 
-
-def save_exceptions_to_file(filename: str, exceptions: list[str]) -> None:
+    # Save exceptions list
     try:
-        with open(filename, "w+") as fp:
+        with open("pdb_exceptions.txt", "w+") as fp:
             fp.write("\n".join(exceptions))
         print(f"[INFO] {len(exceptions)} Exceptions")
     except Exception as e:
-        print(f"[ERROR] {e}")
+        print(f"[FATAL] {e}")
         exit(1)
 
 
 if __name__ == "__main__":
     pdb_ids = parse_pdb_ids_file(filepath="pdb_ids.txt")
     db_dir = create_pdb_dir(dirname="pdb/")
-    exceptions = download_pdb_files(pdb_ids, db_dir, overwrite=False)
-    save_exceptions_to_file("pdb_exceptions.txt", exceptions)
+    download_pdb_files(pdb_ids, db_dir, overwrite=False)
