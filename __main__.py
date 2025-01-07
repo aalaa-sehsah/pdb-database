@@ -1,5 +1,6 @@
 from pathlib import Path
 from urllib import request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 def parse_pdb_ids_file(filepath: str) -> list[str]:
@@ -20,13 +21,8 @@ def create_pdb_dir(dirpath: str) -> Path:
         exit(1)
 
 
-def download_pdb_files(
-    pdb_ids: list[str],
-    db_dir: Path,
-    exceptions_filepath: str,
-    overwrite: bool,
-) -> list[str]:
-    # PDB file signature (used for validation)
+def download_file(db_dir: Path, id_: str, overwrite: bool) -> bool:
+    DB_LINK = "http://files.rcsb.org/download/{id}.pdb"
     SIGNATURE = (f"END{' '* 77}\n").encode("ASCII")
 
     def check_file(filepath: str, num_letters: int = len(SIGNATURE)) -> bool:
@@ -36,30 +32,51 @@ def download_pdb_files(
             file.seek(-num_letters, 2)
             return file.read(num_letters) == SIGNATURE and filesize > 1000
 
-    def download_file(db_dir: Path, id_: str, overwrite: bool = False) -> bool:
-        DB_LINK = "http://files.rcsb.org/download/{id}.pdb"
-        filepath = db_dir / f"{id_}.pdb"
-        temp_filepath = filepath.parent / (filepath.name + ".temp")
+    filepath = db_dir / f"{id_}.pdb"
+    temp_filepath = filepath.parent / (filepath.name + ".temp")
 
-        if not overwrite and filepath.exists():
-            return check_file(filepath)
+    if not overwrite and filepath.exists():
+        return check_file(filepath)
 
-        try:
-            request.urlretrieve(DB_LINK.format(id=id_), temp_filepath)
-            temp_filepath.rename(filepath)
-            return check_file(filepath)
-        except Exception as e:
-            print(f"[FAIL] ({id_}) {e}")
-            return False
+    try:
+        request.urlretrieve(DB_LINK.format(id=id_), temp_filepath)
+        temp_filepath.rename(filepath)
+        return check_file(filepath)
+    except Exception as e:
+        print(f"[FAIL] ({id_}) {e}")
+        return False
 
-    exceptions: list[str] = []
-    count = len(pdb_ids)
-    for i, id_ in enumerate(pdb_ids, start=1):
-        print(f"[INFO] File {i:,}/{count:,}", end="\r")
-        status = download_file(db_dir, id_, overwrite)
-        if status is False:
-            exceptions.append(id_)
-    print(f"[INFO] Finished Download of {count:,} PDB files")
+
+def download_pdb_files(
+    pdb_ids: list[str],
+    db_dir: Path,
+    exceptions_filepath: str,
+    overwrite: bool,
+    max_workers: int = 30,
+) -> None:
+    exceptions = []
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_id = {
+            executor.submit(download_file, db_dir, id_, overwrite): id_
+            for id_ in pdb_ids
+        }
+
+        for i, future in enumerate(as_completed(future_to_id), start=1):
+            id_ = future_to_id[future]
+            try:
+                status = future.result()
+                print(
+                    f"[{'PASS' if status else 'FAIL'}] File {i:,}/{len(pdb_ids):,}: {id_}"
+                )
+                if not status:
+                    exceptions.append(id_)
+            except Exception as e:
+                print(f"[FAIL] ({id_}) {e}")
+                exceptions.append(id_)
+
+    print(f"[INFO] Finished Download of {len(pdb_ids):,} PDB files")
+    print(f"[INFO] {len(exceptions)} Exceptions")
 
     # Save exceptions list
     try:
@@ -73,10 +90,9 @@ def download_pdb_files(
 
 if __name__ == "__main__":
     import os
+    import argparse
 
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-    import argparse
 
     parser = argparse.ArgumentParser(
         description="A script to download PDB files (train/test files)"
@@ -86,7 +102,7 @@ if __name__ == "__main__":
         "--mode",
         type=str,
         choices=["train", "test"],
-        default="train",
+        default="test",
         help="mode of operation: 'train', 'test'",
     )
 
@@ -97,11 +113,19 @@ if __name__ == "__main__":
         help="overwrite already downloaded files",
     )
 
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=30,
+        help="parallel files downloaded at the same time",
+    )
+
     args = parser.parse_args()
 
     # Script arguments
     mode: str = args.mode
-    overwrite: str = args.overwrite
+    overwrite: bool = args.overwrite
+    workers: int = args.workers
 
     # ------------------------------------------------------------------------ #
     pdb_ids_filename = f"pdb_{mode}_ids.txt"
@@ -116,4 +140,5 @@ if __name__ == "__main__":
         db_dir=output_dir,
         exceptions_filepath=exceptions_filename,
         overwrite=overwrite,
+        max_workers=workers,
     )
