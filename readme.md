@@ -8,10 +8,6 @@ Full-atom, high-resolution structures are available in the PDB.
 
 ## Files and Their Functions
 
-- `requirements.txt`
-  - Contain the required Python libraries.
-  - Run `python -m pip install -r requirements.txt` in terminal.
-
 - `pdb_ids.txt` contains **115,850** IDs for the PDB files.
 - `download_pdb.py`
   - Download each full-atom structure by its ID listed in `pdb_ids.txt`.
