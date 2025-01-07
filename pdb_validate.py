@@ -1,9 +1,11 @@
 """This script only checks the END string in each PDB file"""
 
-SIGNATURE = b"END                                                                             \n"
+SIGNATURE = (f"END{' '* 77}\n").encode("ASCII")
 
 
 def check_signature(file_path: str, num_letters: int = 81) -> bool:
+    """Check PDB file signature"""
+
     with open(file_path, "rb") as file:
         file.seek(0, 2)
         filesize = file.tell()

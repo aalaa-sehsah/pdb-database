@@ -9,10 +9,10 @@ Full-atom, high-resolution structures are available in the PDB.
 ## Files and Their Functions
 
 - `pdb_ids.txt` contains **115,850** IDs for the PDB files.
-- `download_pdb.py`
+- `pdb_download.py`
   - Download each full-atom structure by its ID listed in `pdb_ids.txt`.
   - Generate `pdb_exceptions.txt` contains not downloaded IDs.
-- `validate_pdb.py`
+- `pdb_validate.py`
   - Trivial check of PDB file signature of incomplete downloaded files.
   - Generate `pdb_corrupted.txt` contains corrupted file IDs.
 

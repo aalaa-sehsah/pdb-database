@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
     # Step #3: Download files and append exceptions
     exceptions = []
-    bar = LoadingBar(len(ids_list), 0.001)
+    bar = LoadingBar(len(ids_list))
     for i, id_ in enumerate(ids_list):
         # Step #3.1: Retry if file failed to download
         for trial in range(arg_retries):

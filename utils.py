@@ -12,7 +12,8 @@ class LoadingBar:
         tc = time()
         if tc - self.t0 > 0.1:
             self.t0 = tc
-            print(f"[WAIT] {i / self.total * 100:6.2f}% ({i}\\{self.total})", end="\r")
+            percentage = f"{i / self.total * 100:6.2f}"
+            print(f"[WAIT] {percentage}% ({i}\\{self.total})", end="\r")
 
     def finish(self):
         time_taken = f"in {time()-self.ti:.2f} sec"
