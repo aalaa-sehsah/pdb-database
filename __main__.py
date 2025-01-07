@@ -102,7 +102,7 @@ if __name__ == "__main__":
         "--mode",
         type=str,
         choices=["train", "test"],
-        default="test",
+        default="train",
         help="mode of operation: 'train', 'test'",
     )
 
