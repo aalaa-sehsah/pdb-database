@@ -54,7 +54,7 @@ def download_pdb_files(pdb_ids: list[str], db_dir: Path, overwrite: bool) -> lis
         status = download_file(db_dir, id_, overwrite)
         if status is False:
             exceptions.append(id_)
-    print(f'[INFO] Finished Download of {count:,} PDB files')
+    print(f"[INFO] Finished Download of {count:,} PDB files")
 
     # Save exceptions list
     try:
@@ -67,6 +67,12 @@ def download_pdb_files(pdb_ids: list[str], db_dir: Path, overwrite: bool) -> lis
 
 
 if __name__ == "__main__":
+    import sys
+    import os
+
+    dir_ = os.path.dirname(sys.argv[0])
+    dir_ and os.chdir(dir_)
+
     pdb_ids = parse_pdb_ids_file(filepath="pdb_ids.txt")
     db_dir = create_pdb_dir(dirname="pdb/")
     download_pdb_files(pdb_ids, db_dir, overwrite=False)
