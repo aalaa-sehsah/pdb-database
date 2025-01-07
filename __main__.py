@@ -6,7 +6,7 @@ def parse_pdb_ids_file(filepath: str) -> list[str]:
     try:
         return Path(filepath).read_text().splitlines()
     except Exception as e:
-        print(f"[FATAL] {e}")
+        print(f"[EXIT] {e}")
         exit(1)
 
 
@@ -16,7 +16,7 @@ def create_pdb_dir(dirpath: str) -> Path:
         db_dir.mkdir(exist_ok=True)
         return db_dir
     except Exception as e:
-        print(f"[FATAL] {e}")
+        print(f"[EXIT] {e}")
         exit(1)
 
 
@@ -49,7 +49,7 @@ def download_pdb_files(
             temp_filepath.rename(filepath)
             return check_file(filepath)
         except Exception as e:
-            print(f"[ERROR] ({id_}) {e}")
+            print(f"[FAIL] ({id_}) {e}")
             return False
 
     exceptions: list[str] = []
@@ -67,7 +67,7 @@ def download_pdb_files(
             fp.write("\n".join(exceptions))
         print(f"[INFO] {len(exceptions)} Exceptions")
     except Exception as e:
-        print(f"[FATAL] {e}")
+        print(f"[EXIT] {e}")
         exit(1)
 
 
