@@ -1,2 +1,4 @@
 __pycache__/
-pdb/
+pdb_train/
+pdb_test/
+pdb_*_exceptions.txt

@@ -1,9 +1,6 @@
 from pathlib import Path
 from urllib import request
 
-# PDB file signature (used for validation)
-SIGNATURE = (f"END{' '* 77}\n").encode("ASCII")
-
 
 def parse_pdb_ids_file(filepath: str) -> list[str]:
     try:
@@ -13,9 +10,9 @@ def parse_pdb_ids_file(filepath: str) -> list[str]:
         exit(1)
 
 
-def create_pdb_dir(dirname: str) -> Path:
+def create_pdb_dir(dirpath: str) -> Path:
     try:
-        db_dir = Path(dirname)
+        db_dir = Path(dirpath)
         db_dir.mkdir(exist_ok=True)
         return db_dir
     except Exception as e:
@@ -23,7 +20,15 @@ def create_pdb_dir(dirname: str) -> Path:
         exit(1)
 
 
-def download_pdb_files(pdb_ids: list[str], db_dir: Path, overwrite: bool) -> list[str]:
+def download_pdb_files(
+    pdb_ids: list[str],
+    db_dir: Path,
+    exceptions_filepath: str,
+    overwrite: bool,
+) -> list[str]:
+    # PDB file signature (used for validation)
+    SIGNATURE = (f"END{' '* 77}\n").encode("ASCII")
+
     def check_file(filepath: str, num_letters: int = len(SIGNATURE)) -> bool:
         with open(filepath, "rb") as file:
             file.seek(0, 2)
@@ -58,7 +63,7 @@ def download_pdb_files(pdb_ids: list[str], db_dir: Path, overwrite: bool) -> lis
 
     # Save exceptions list
     try:
-        with open("pdb_exceptions.txt", "w+") as fp:
+        with open(exceptions_filepath, "w+") as fp:
             fp.write("\n".join(exceptions))
         print(f"[INFO] {len(exceptions)} Exceptions")
     except Exception as e:
@@ -67,12 +72,48 @@ def download_pdb_files(pdb_ids: list[str], db_dir: Path, overwrite: bool) -> lis
 
 
 if __name__ == "__main__":
-    import sys
     import os
 
-    dir_ = os.path.dirname(sys.argv[0])
-    dir_ and os.chdir(dir_)
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    pdb_ids = parse_pdb_ids_file(filepath="pdb_ids.txt")
-    db_dir = create_pdb_dir(dirname="pdb/")
-    download_pdb_files(pdb_ids, db_dir, overwrite=False)
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="A script to download PDB files (train/test files)"
+    )
+
+    parser.add_argument(
+        "--mode",
+        type=str,
+        choices=["train", "test"],
+        default="train",
+        help="mode of operation: 'train', 'test'",
+    )
+
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        default=False,
+        help="overwrite already downloaded files",
+    )
+
+    args = parser.parse_args()
+
+    # Script arguments
+    mode: str = args.mode
+    overwrite: str = args.overwrite
+
+    # ------------------------------------------------------------------------ #
+    pdb_ids_filename = f"pdb_{mode}_ids.txt"
+    pdb_output_dirname = f"pdb_{mode}"
+    exceptions_filename = f"pdb_{mode}_exceptions.txt"
+
+    pdb_ids = parse_pdb_ids_file(filepath=pdb_ids_filename)
+    output_dir = create_pdb_dir(dirpath=pdb_output_dirname)
+
+    download_pdb_files(
+        pdb_ids=pdb_ids,
+        db_dir=output_dir,
+        exceptions_filepath=exceptions_filename,
+        overwrite=overwrite,
+    )
