@@ -16,8 +16,9 @@ Full-atom, high-resolution structures are available in the PDB.
 - `__main__.py`
   - Download each full-atom structure by its ID listed in `pdb_ids.txt`.
   - Generate `pdb_exceptions.txt` contains not downloaded IDs.
+  - Validate downloaded files; if it is run for the second time.
 - `pdb_ids.txt` contains **115,850** IDs for the PDB files.
-- `pdb_exceptions.txt` currently contains 15 entries. 
+- `pdb_exceptions.txt` currently contains 15 entries.
 
 ## References
 
